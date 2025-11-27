@@ -1,0 +1,22 @@
+# ====== Machine Learning ======
+tensorflow-macos==2.12.0
+tensorflow-metal==1.1.0
+numpy
+pillow
+
+# ====== FastAPI Backend ======
+fastapi
+uvicorn[standard]
+python-multipart
+
+# ====== Streamlit UI ======
+streamlit
+matplotlib
+pandas
+requests
+
+# ====== Load Testing ======
+locust
+
+# ====== Optional (improve performance) ======
+aiofiles
