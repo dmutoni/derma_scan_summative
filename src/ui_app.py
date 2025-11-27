@@ -14,7 +14,7 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-API_URL = "https://derma-scan-summative-1.onrender.com"
+API_URL = "http://127.0.0.1:8000"
 
 # ------------------------------
 # Custom Styling
@@ -153,7 +153,7 @@ elif page == "♻️ Retrain Model":
                     st.write(f"Final Train Accuracy: {result['final_train_acc']:.3f}")
                     st.write(f"Final Val Accuracy: {result['final_val_acc']:.3f}")
             except:
-                st.error("Retraining failed (API unreachable).")
+                print("Retraining failed (API unreachable).")
 
 
 # ------------------------------

@@ -1,36 +1,67 @@
-# locustfile.py
-
 from locust import HttpUser, task, between
-import os
+from pathlib import Path
 import random
+import os
 
-# Path to a folder containing test images for load testing
-TEST_IMAGES_DIR = "test_images"   
+# ------------------------------------------
+# Resolve correct path to the test images
+# ------------------------------------------
+BASE_DIR = Path(__file__).resolve().parent
+TEST_IMAGES_DIR = BASE_DIR / "data" / "test_images"
+
+# Convert to string for compatibility with os.listdir
+TEST_IMAGES_DIR = TEST_IMAGES_DIR.resolve()
+
+print(f"[Locust] Loading images from: {TEST_IMAGES_DIR}")
+
+# ------------------------------------------
+# Load all images in the folder
+# ------------------------------------------
+if not TEST_IMAGES_DIR.exists():
+    print(f"[Locust ERROR] Test images directory not found: {TEST_IMAGES_DIR}")
+    TEST_IMAGES = []
+else:
+    TEST_IMAGES = [
+        str(TEST_IMAGES_DIR / img)
+        for img in os.listdir(TEST_IMAGES_DIR)
+        if img.lower().endswith((".png", ".jpg", ".jpeg"))
+    ]
+
+print(f"[Locust] Loaded {len(TEST_IMAGES)} test images")
 
 
+# ========================================================================
+# LOCUST USER
+# ========================================================================
 class DermaScanUser(HttpUser):
-    """
-    Simulates a user sending repeated prediction requests to the API.
-    """
-    wait_time = between(1, 3)  # wait 1–3 sec between requests
+    wait_time = between(1, 3)  # seconds between requests
 
     @task
-    def predict_image(self):
-        """
-        Sends a POST request to /predict with a real image file.
-        """
-
-        # Pick a random image from the test_images folder
-        images = os.listdir(TEST_IMAGES_DIR)
-        if not images:
-            print("⚠️ No images found in test_images/. Add some JPG files.")
+    def predict_random_image(self):
+        """Send a random test image to /predict endpoint."""
+        if not TEST_IMAGES:
+            print("[Locust] No test images found. Skipping request.")
             return
 
-        img_name = random.choice(images)
-        img_path = os.path.join(TEST_IMAGES_DIR, img_name)
+        # Pick a random image
+        img_path = random.choice(TEST_IMAGES)
 
-        with open(img_path, "rb") as img:
-            files = {"file": (img_name, img, "image/jpeg")}
+        try:
+            with open(img_path, "rb") as f:
+                files = {"file": (Path(img_path).name, f, "image/jpeg")}
 
-            # Send request to your FastAPI server
-            self.client.post("/predict", files=files)
+                response = self.client.post(
+                    "/predict",
+                    files=files,
+                    timeout=30
+                )
+
+                try:
+                    data = response.json()
+                except Exception:
+                    data = {"error": "Invalid JSON response"}
+
+                print(f"[Locust] Sent {img_path} → Response: {data}")
+
+        except Exception as e:
+            print(f"[Locust ERROR] Could not send image {img_path}: {e}")
