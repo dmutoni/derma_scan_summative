@@ -130,8 +130,8 @@ async def upload_bulk(files: List[UploadFile] = File(...)):
     On Render: simulated only.
     """
 
-    if IS_RENDER:
-        return {"warning": "Upload disabled on Render", "status": "simulated"}
+    # if IS_RENDER:
+    #     return {"warning": "Upload disabled on Render", "status": "simulated"}
 
     NEW_DATA_DIR.mkdir(parents=True, exist_ok=True)
     saved = 0
@@ -168,11 +168,11 @@ def retrain():
     Only works locally.
     """
 
-    if IS_RENDER:
-        return {
-            "status": "disabled_on_render",
-            "message": "Retraining cannot run on Render. Demo this locally."
-        }
+    # if IS_RENDER:
+    #     return {
+    #         "status": "disabled_on_render",
+    #         "message": "Retraining cannot run on Render. Demo this locally."
+    #     }
 
     if train_ds is None:
         return {"status": "error", "message": "No training dataset available"}
